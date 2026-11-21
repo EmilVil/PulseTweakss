@@ -29,4 +29,4 @@ elseif (-not (Test-Path -LiteralPath (Join-Path $publish 'Pulse.exe'))) {
 & $compiler $script
 if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE." }
 
-Write-Host "Installer created at $(Join-Path $root 'artifacts/PULSE-Setup.exe')"
+Write-Host "Installer created at $(Join-Path $root 'Releases/PULSE-Setup.exe')"
