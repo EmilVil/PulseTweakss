@@ -1,0 +1,39 @@
+<UserControl x:Class="Pulse.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Style="{StaticResource Panel}">
+        <StackPanel>
+            <Border Style="{StaticResource Rule}" Padding="15,14"><TextBlock Text="Preferences" Style="{StaticResource Heading}" /></Border>
+            <Border Style="{StaticResource Rule}" Padding="15,13">
+                <DockPanel>
+                    <CheckBox DockPanel.Dock="Right" Style="{StaticResource Toggle}" IsChecked="{Binding LiveMonitoring, Mode=TwoWay}" Margin="12,0,0,0"
+                              AutomationProperties.Name="Live monitoring" />
+                    <StackPanel>
+                        <TextBlock Text="Live monitoring" FontWeight="SemiBold" />
+                        <TextBlock Text="Refresh CPU and memory usage while Overview is visible." Style="{StaticResource Meta}" Margin="0,3,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+            <Border Style="{StaticResource Rule}" Padding="15,13">
+                <DockPanel>
+                    <CheckBox DockPanel.Dock="Right" Style="{StaticResource Toggle}" IsChecked="{Binding AnimatePages, Mode=TwoWay}" Margin="12,0,0,0"
+                              AutomationProperties.Name="Page transitions" />
+                    <StackPanel>
+                        <TextBlock Text="Page transitions" FontWeight="SemiBold" />
+                        <TextBlock Text="Fade between pages when Windows animations are enabled." Style="{StaticResource Meta}" Margin="0,3,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+            <Border Padding="15,13">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Export JSON" Command="{Binding ExportCommand}" VerticalAlignment="Center" Margin="12,0,0,0" />
+                    <StackPanel>
+                        <TextBlock Text="Export settings and history" FontWeight="SemiBold" />
+                        <TextBlock Text="Save detected settings, preferences and original values in a readable JSON file."
+                                   Style="{StaticResource Meta}" Margin="0,3,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>

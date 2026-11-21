@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>Pulse</AssemblyName>
+    <RootNamespace>Pulse</RootNamespace>
+    <Version>0.1.0</Version>
+    <Product>PULSE</Product>
+    <Description>Windows tuning utility</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\*.png" />
+    <Compile Remove="Tests\**\*.cs" />
+  </ItemGroup>
+</Project>
