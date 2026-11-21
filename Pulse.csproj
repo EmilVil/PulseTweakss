@@ -11,6 +11,7 @@
     <Version>0.1.0</Version>
     <Product>PULSE</Product>
     <Description>Windows tuning utility</Description>
+    <ApplicationIcon>Assets\Pulse.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="Assets\*.png" />
