@@ -3,7 +3,7 @@
 ; Non-commercial use only.
 
 #define MyAppName "Pulse tweaks"
-#define MyAppVersion "v0.1.0"
+#define MyAppVersion "v0.2.0"
 #define MyAppPublisher "Pulse"
 #define MyAppExeName "Pulse.exe"
 #define MyAppAssocName MyAppName + " File"
@@ -44,8 +44,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Projects\PulseTweaks\bin\Release\net8.0-windows\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Projects\PulseTweaks\bin\Release\net8.0-windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Projects\PulseTweaks\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdir
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files.
 
 [Registry]

@@ -40,7 +40,7 @@ public sealed class MainViewModel : Bindable
         Navigation =
         [
             new(Page.Overview, "\uE80F") { Active = true }, new(Page.Optimization, "\uE945"),
-            new(Page.Debloat, "\uE74D"), new(Page.Gaming, "\uE7FC"), new(Page.Privacy, "\uE72E"),
+            new(Page.Debloat, "\uE74D"), new(Page.AppInstaller, "\uE7A8"), new(Page.Gaming, "\uE7FC"), new(Page.Privacy, "\uE72E"),
             new(Page.Customization, "\uE771"), new(Page.Advanced, "\uE9E9"), new(Page.Restore, "\uE777"),
             new(Page.Settings, "\uE713")
         ];
@@ -79,7 +79,8 @@ public sealed class MainViewModel : Bindable
     public bool IsOverview => !SearchActive && page == Page.Overview;
     public bool IsRestore => !SearchActive && page == Page.Restore;
     public bool IsSettings => !SearchActive && page == Page.Settings;
-    public bool IsCatalog => !IsOverview && !IsRestore && !IsSettings;
+    public bool IsAppInstaller => !SearchActive && page == Page.AppInstaller;
+    public bool IsCatalog => !IsOverview && !IsRestore && !IsSettings && !IsAppInstaller;
     public bool IsAdvanced => !SearchActive && page == Page.Advanced;
     public string PageTitle => SearchActive ? "Search results" : page.ToString();
     public string PageDescription => SearchActive ? "Find settings and optional apps across PULSE." : page switch
@@ -87,6 +88,7 @@ public sealed class MainViewModel : Bindable
         Page.Overview => "Live system activity and hardware at a glance.",
         Page.Optimization => "Adjust how Windows and your applications respond.",
         Page.Debloat => "Review optional apps installed for your Windows account.",
+        Page.AppInstaller => "Find and install applications through verified WinGet package IDs.",
         Page.Gaming => "Manage Windows gaming, capture and startup preferences.",
         Page.Privacy => "Manage recommendations, personalization and optional features.",
         Page.Customization => "Adjust the details you see while using Windows.",
@@ -241,6 +243,7 @@ public sealed class MainViewModel : Bindable
         Notify(nameof(IsOverview));
         Notify(nameof(IsRestore));
         Notify(nameof(IsSettings));
+        Notify(nameof(IsAppInstaller));
         Notify(nameof(IsCatalog));
         Notify(nameof(IsAdvanced));
         Notify(nameof(PageTitle));

@@ -1,6 +1,6 @@
 namespace Pulse.Models;
 
-public enum Page { Overview, Optimization, Debloat, Gaming, Privacy, Customization, Advanced, Restore, Settings }
+public enum Page { Overview, Optimization, Debloat, AppInstaller, Gaming, Privacy, Customization, Advanced, Restore, Settings }
 public enum Profile { Custom, Safe, Balanced, Gaming }
 public enum Risk { Low, Moderate }
 public enum ChangeStatus { Pending, Applied, Failed, ReviewRequired, Reverting, Reverted }

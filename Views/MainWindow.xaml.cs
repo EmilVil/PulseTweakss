@@ -49,13 +49,10 @@ public partial class MainWindow : Window
     {
         try
         {
-            const string name = "pack://application:,,,/Pulse;component/Assets/Логотип PULSE с пульсовой линией.png";
+            const string name = "pack://application:,,,/Pulse;component/Assets/PulseMark.png";
             var bitmap = new BitmapImage(new Uri(name, UriKind.Absolute));
-            ImageSource logo = bitmap.PixelWidth == 1254 && bitmap.PixelHeight == 1254
-                ? new CroppedBitmap(bitmap, new Int32Rect(323, 303, 608, 517))
-                : bitmap;
-            Brand.Source = logo;
-            Icon = logo;
+            Brand.Source = bitmap;
+            Icon = bitmap;
         }
         catch (Exception)
         {

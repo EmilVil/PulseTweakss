@@ -96,7 +96,8 @@
                 </DockPanel>
             </Border>
 
-            <ScrollViewer x:Name="PageScroll" Grid.Column="1" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer x:Name="PageScroll" Grid.Column="1" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                          Visibility="{Binding IsAppInstaller, Converter={StaticResource InverseBoolVisibility}}">
                 <StackPanel x:Name="PageBody" Margin="27,24,27,24">
                     <DockPanel Margin="0,0,0,22" LastChildFill="True">
                         <Button DockPanel.Dock="Right" Margin="13,5,0,0" VerticalAlignment="Top"
@@ -117,6 +118,8 @@
                     <views:SettingsView Visibility="{Binding IsSettings, Converter={StaticResource BoolVisibility}}" />
                 </StackPanel>
             </ScrollViewer>
+            <views:AppInstallerView Grid.Column="1" Grid.Row="1"
+                                    Visibility="{Binding DataContext.IsAppInstaller, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolVisibility}}" />
 
             <Border Grid.Column="1" Grid.Row="2" Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
                 <StackPanel>
