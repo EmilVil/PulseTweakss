@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using Pulse.Services;
+using Pulse.Views;
 
 namespace Pulse.ViewModels;
 
@@ -19,6 +20,11 @@ public sealed class AppInstallerViewModel : Bindable
         Apps = new(AppCatalog.Create());
         Categories = new(["All categories", .. Enum.GetValues<AppCategory>().Select(Label)]);
         InstallCommand = new Command(async _ => await InstallSelectedAsync(), _ => !Busy && SelectedCount > 0);
+        SourceCommand = new Command(parameter =>
+        {
+            if (parameter is AppEntry app)
+                new SourceDetailsWindow(app) { Owner = Application.Current.MainWindow }.ShowDialog();
+        }, parameter => parameter is AppEntry app && app.PackageId is not null);
         foreach (var app in Apps)
             app.PropertyChanged += (_, _) => { Notify(nameof(SelectedCount)); Notify(nameof(VisibleApps)); CommandManager.InvalidateRequerySuggested(); };
     }
@@ -26,6 +32,7 @@ public sealed class AppInstallerViewModel : Bindable
     public ObservableCollection<AppEntry> Apps { get; }
     public ObservableCollection<string> Categories { get; }
     public ICommand InstallCommand { get; }
+    public ICommand SourceCommand { get; }
     public int SelectedCount => Apps.Count(app => app.Selected && app.Status == "Available");
     public int CheckedCount { get => checkedCount; private set { if (Set(ref checkedCount, value)) Notify(nameof(Progress)); } }
     public int TotalCount => Apps.Count;

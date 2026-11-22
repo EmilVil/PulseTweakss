@@ -1,0 +1,45 @@
+<Window x:Class="Pulse.Views.SourceDetailsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Width="610" SizeToContent="Height" MaxHeight="650" ResizeMode="CanResize"
+        ShowInTaskbar="False" WindowStyle="None" WindowStartupLocation="CenterOwner"
+        Background="{StaticResource Canvas}" Foreground="{StaticResource Ink}"
+        FontFamily="Segoe UI" FontSize="13" Title="Application source details">
+    <Border BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="20">
+        <Grid>
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <StackPanel>
+                <TextBlock x:Name="AppTitle" FontSize="21" FontWeight="SemiBold"/>
+                <TextBlock Text="WinGet package source details" Style="{StaticResource Secondary}" Margin="0,5,0,14"/>
+            </StackPanel>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock x:Name="SourceStatus" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,0,0,13"/>
+                    <TextBlock Text="What this is for" Style="{StaticResource Meta}"/>
+                    <TextBlock Text="These details let you inspect the WinGet listing and where its installer comes from. Compare the publisher website with the software maker’s site; the installer URL shows the download location, and the checksum helps detect a changed file. This is source information, not a malware scan."
+                               Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,3,0,13"/>
+                    <TextBlock Text="Package ID" Style="{StaticResource Meta}"/>
+                    <TextBlock Text="Exact identifier used to locate this package in WinGet." Style="{StaticResource Secondary}" Margin="0,2,0,0"/>
+                    <TextBox x:Name="PackageIdBox" IsReadOnly="True" Margin="0,4,0,11"/>
+                    <TextBlock Text="Publisher listed by WinGet" Style="{StaticResource Meta}"/>
+                    <TextBlock Text="Publisher name supplied with the package listing." Style="{StaticResource Secondary}" Margin="0,2,0,0"/>
+                    <TextBox x:Name="PublisherBox" IsReadOnly="True" Margin="0,4,0,11"/>
+                    <TextBlock Text="Publisher website listed by WinGet" Style="{StaticResource Meta}"/>
+                    <TextBlock Text="Website declared in the listing; it may differ from the download host." Style="{StaticResource Secondary}" Margin="0,2,0,0"/>
+                    <TextBlock Margin="0,5,0,11" TextWrapping="Wrap">
+                        <Hyperlink x:Name="PublisherLink" RequestNavigate="OpenLink"/>
+                    </TextBlock>
+                    <TextBlock Text="Installer URL" Style="{StaticResource Meta}"/>
+                    <TextBlock Text="Download address WinGet selected for this device." Style="{StaticResource Secondary}" Margin="0,2,0,0"/>
+                    <TextBlock Margin="0,5,0,11" TextWrapping="Wrap">
+                        <Hyperlink x:Name="InstallerLink" RequestNavigate="OpenLink"/>
+                    </TextBlock>
+                    <TextBlock Text="SHA-256 from WinGet manifest" Style="{StaticResource Meta}"/>
+                    <TextBlock Text="WinGet compares the downloaded file with this checksum." Style="{StaticResource Secondary}" Margin="0,2,0,0"/>
+                    <TextBox x:Name="HashBox" IsReadOnly="True" Margin="0,4,0,6"/>
+                </StackPanel>
+            </ScrollViewer>
+            <Button Grid.Row="2" Content="Close" IsCancel="True" MinWidth="82" HorizontalAlignment="Right" Margin="0,14,0,0"/>
+        </Grid>
+    </Border>
+</Window>

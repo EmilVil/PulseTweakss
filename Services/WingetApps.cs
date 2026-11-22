@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Text;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 using Pulse.Models;
 
 namespace Pulse.Services;
@@ -16,6 +18,12 @@ public sealed class AppEntry : INotifyPropertyChanged
     private string? note;
     private string status = "Checking";
     private bool selected;
+    private bool hasVerifiedSource;
+    private string? publisher;
+    private string? publisherUrl;
+    private string? installerUrl;
+    private string? installerSha256;
+    private string? sourceMetadataNote;
     public required string Name { get; init; }
     public required AppCategory Category { get; init; }
     public string CategoryLabel => Category switch
@@ -40,7 +48,6 @@ public sealed class AppEntry : INotifyPropertyChanged
         "7-Zip" => "7z",
         "VS Code" => "VS",
         "EA App" => "EA",
-        "GOG Galaxy" => "GOG",
         "Tor Browser" => "Tor",
         "Cloudflare WARP" => "W",
         "Telegram Desktop" => "TG",
@@ -84,8 +91,14 @@ public sealed class AppEntry : INotifyPropertyChanged
     public bool Selected { get => selected; set => Set(ref selected, value); }
     public bool Available => ResolvedId is not null;
     public bool IsInstalled => Status == "Installed";
+    public bool HasVerifiedSource { get => hasVerifiedSource; set => Set(ref hasVerifiedSource, value); }
+    public string? Publisher { get => publisher; set => Set(ref publisher, value); }
+    public string? PublisherUrl { get => publisherUrl; set => Set(ref publisherUrl, value); }
+    public string? InstallerUrl { get => installerUrl; set => Set(ref installerUrl, value); }
+    public string? InstallerSha256 { get => installerSha256; set => Set(ref installerSha256, value); }
+    public string? SourceMetadataNote { get => sourceMetadataNote; set => Set(ref sourceMetadataNote, value); }
     public event PropertyChangedEventHandler? PropertyChanged;
-    public void RefreshBindings() { Notify(nameof(Available)); Notify(nameof(Note)); Notify(nameof(Status)); Notify(nameof(IsInstalled)); }
+    public void RefreshBindings() { Notify(nameof(Available)); Notify(nameof(Note)); Notify(nameof(Status)); Notify(nameof(IsInstalled)); Notify(nameof(HasVerifiedSource)); }
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
@@ -103,18 +116,18 @@ public static class AppCatalog
     private static readonly (AppCategory Category, string Name, string? Id)[] Entries =
     [
         (AppCategory.Browsers,"Firefox","Mozilla.Firefox"),(AppCategory.Browsers,"Brave","Brave.Brave"),
+        (AppCategory.Browsers,"LibreWolf","LibreWolf.LibreWolf"),
         (AppCategory.Browsers,"Tor Browser","TorProject.TorBrowser"),
         (AppCategory.VPNPrivacy,"Proton VPN","ProtonTechnologies.ProtonVPN"),(AppCategory.VPNPrivacy,"Mullvad VPN","MullvadVPN.MullvadVPN"),
+        (AppCategory.VPNPrivacy,"Cloudflare WARP","Cloudflare.Warp"),
         (AppCategory.VPNPrivacy,"Tailscale","Tailscale.Tailscale"),
         (AppCategory.VPNPrivacy,"WireGuard","WireGuard.WireGuard"),(AppCategory.VPNPrivacy,"Bitwarden","Bitwarden.Bitwarden"),
-        (AppCategory.VPNPrivacy,"KeePassXC","KeePassXCTeam.KeePassXC"),
         (AppCategory.Communication,"Telegram Desktop","Telegram.TelegramDesktop"),(AppCategory.Communication,"Discord"," Discord.Discord".Trim()),
         (AppCategory.Communication,"Signal","OpenWhisperSystems.Signal"),
         (AppCategory.Communication,"WhatsApp","WhatsApp.WhatsApp"),
         (AppCategory.Communication,"Thunderbird","Mozilla.Thunderbird"),
         (AppCategory.Gaming,"Steam","Valve.Steam"),(AppCategory.Gaming,"Epic Games","EpicGames.EpicGamesLauncher"),
-        (AppCategory.Gaming,"GOG Galaxy","GOG.Galaxy"),(AppCategory.Gaming,"Playnite","Playnite.Playnite"),
-        (AppCategory.Gaming,"Heroic Launcher","HeroicGamesLauncher.HeroicGamesLauncher"),
+        (AppCategory.Gaming,"Ubisoft Connect","Ubisoft.Connect"),
         (AppCategory.Utilities,"7-Zip","7zip.7zip"),(AppCategory.Utilities,"Everything","voidtools.Everything"),
         (AppCategory.Utilities,"PowerToys","Microsoft.PowerToys"),(AppCategory.Utilities,"WizTree","AntibodySoftware.WizTree"),
         (AppCategory.Utilities,"CrystalDiskInfo","CrystalDewWorld.CrystalDiskInfo"),(AppCategory.Utilities,"Rufus","Rufus.Rufus"),
@@ -168,10 +181,30 @@ public sealed class WingetService
                 app.ResolvedId = null;
                 app.Status = "Unavailable";
                 app.Note = search.ExitCode == 0 ? "Exact package ID was not found in the WinGet community source." : search.Output.Trim();
+                app.HasVerifiedSource = false;
+                app.SourceMetadataNote = "WinGet could not confirm this exact package in its configured source.";
                 progress.Report(app.Name);
                 return;
             }
             app.ResolvedId = app.PackageId;
+            var details = await RunAsync(["show", "--id", app.PackageId, "--exact", "--source", "winget", "--architecture", GetWingetArchitecture(), "--locale", "en-US", "--accept-source-agreements", "--disable-interactivity"], cancellationToken);
+            var source = ParseSourceDetails(details.Output);
+            if (details.ExitCode == 0 && ContainsShownId(details.Output, app.PackageId))
+            {
+                app.Publisher = source.Publisher;
+                app.PublisherUrl = IsHttps(source.PublisherUrl) ? source.PublisherUrl : null;
+                app.InstallerUrl = IsHttps(source.InstallerUrl) ? source.InstallerUrl : null;
+                app.InstallerSha256 = IsSha256(source.InstallerSha256) ? source.InstallerSha256 : null;
+                app.HasVerifiedSource = app.InstallerUrl is not null && app.InstallerSha256 is not null;
+                app.SourceMetadataNote = app.HasVerifiedSource
+                    ? "WinGet provided an HTTPS installer URL and a valid SHA-256 hash."
+                    : "WinGet did not provide both an applicable HTTPS installer URL and a valid SHA-256 hash for this device. No source check is shown.";
+            }
+            else
+            {
+                app.HasVerifiedSource = false;
+                app.SourceMetadataNote = "WinGet could not read source metadata for this exact package.";
+            }
             var installed = await RunAsync(["list", "--id", app.PackageId, "--exact", "--disable-interactivity"], cancellationToken);
             app.Status = installed.ExitCode == 0 && ContainsId(installed.Output, app.PackageId) ? "Installed" : "Available";
             app.Version = ReadVersion(installed.Output);
@@ -191,6 +224,37 @@ public sealed class WingetService
 
     private static bool ContainsId(string output, string id) => output.Split(['\r','\n'], StringSplitOptions.TrimEntries)
         .Any(line => line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Any(token => token.Equals(id, StringComparison.OrdinalIgnoreCase)));
+
+    private static bool ContainsShownId(string output, string id) =>
+        output.Contains($"[{id}]", StringComparison.OrdinalIgnoreCase) ||
+        output.Split(['\r', '\n'], StringSplitOptions.TrimEntries).Any(line =>
+            line.StartsWith("Id:", StringComparison.OrdinalIgnoreCase) &&
+            line[(line.IndexOf(':') + 1)..].Trim().Equals(id, StringComparison.OrdinalIgnoreCase));
+
+    private sealed record SourceDetails(string? Publisher, string? PublisherUrl, string? InstallerUrl, string? InstallerSha256);
+
+    private static SourceDetails ParseSourceDetails(string output) => new(
+        ReadField(output, "Publisher"), ReadField(output, "Publisher Url"),
+        ReadField(output, "Installer Url"), ReadField(output, "Installer SHA256"));
+
+    private static string? ReadField(string output, string label)
+    {
+        var acceptedLabels = label switch
+        {
+            "Publisher" => new[] { "Publisher", "Издатель" },
+            "Publisher Url" => new[] { "Publisher Url", "URL-адрес издателя", "Адрес издателя" },
+            "Installer Url" => new[] { "Installer Url", "URL-адрес установщика", "Адрес установщика" },
+            "Installer SHA256" => new[] { "Installer SHA256", "SHA256 установщика", "Хэш SHA256 установщика", "Хэш установщика SHA256" },
+            _ => new[] { label }
+        };
+        var line = output.Split(['\r', '\n'], StringSplitOptions.TrimEntries)
+            .FirstOrDefault(candidate => acceptedLabels.Any(accepted => candidate.StartsWith(accepted + ":", StringComparison.OrdinalIgnoreCase)));
+        return line is null ? null : line[(line.IndexOf(':') + 1)..].Trim();
+    }
+
+    private static bool IsHttps(string? value) => Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps;
+    private static bool IsSha256(string? value) => value is { Length: 64 } && Regex.IsMatch(value, "\\A[0-9a-fA-F]{64}\\z");
+    private static string GetWingetArchitecture() => RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
 
     private static string? ReadVersion(string output) => output.Split(['\r','\n'], StringSplitOptions.TrimEntries)
         .FirstOrDefault(line => VersionNames.Any(name => line.Contains(name, StringComparison.OrdinalIgnoreCase)));
